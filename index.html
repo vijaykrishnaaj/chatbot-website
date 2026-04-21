@@ -164,18 +164,49 @@
                 }, 2000);
 
                 // Simulate Bot Response
-                setIsTyping(true);
-                setTimeout(() => {
-                    setIsTyping(false);
-                    const newBotMsg = {
-                        id: (Date.now() + 1).toString(),
-                        sender: 'bot',
-                        text: "I've received your message. As a demo UI, I'm echoing back to confirm your layout works perfectly. Let me know if you need to test more features!",
-                        timestamp: new Date(),
-                        status: 'seen'
-                    };
-                    setMessages(prev => [...prev, newBotMsg]);
-                }, 3500);
+                // 🔥 REAL BACKEND CALL
+const userText = inputValue.trim();
+
+setIsTyping(true);
+
+try {
+  const res = await fetch("https://chatbot-backend-eqi8.onrender.com/chat", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ message: userText })
+  });
+
+  const data = await res.json();
+
+  setIsTyping(false);
+
+  const newBotMsg = {
+    id: (Date.now() + 1).toString(),
+    sender: 'bot',
+    text: data.reply || "No response from AI",
+    timestamp: new Date(),
+    status: 'seen'
+  };
+
+  setMessages(prev => [...prev, newBotMsg]);
+
+} catch (error) {
+  console.error("Frontend error:", error);
+
+  setIsTyping(false);
+
+  const errorMsg = {
+    id: (Date.now() + 1).toString(),
+    sender: 'bot',
+    text: "⚠️ Failed to connect to AI server",
+    timestamp: new Date(),
+    status: 'seen'
+  };
+
+  setMessages(prev => [...prev, errorMsg]);
+}
             };
 
             const handleFileUpload = (e) => {
